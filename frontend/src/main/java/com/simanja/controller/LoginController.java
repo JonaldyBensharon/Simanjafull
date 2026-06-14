@@ -1,13 +1,12 @@
 package com.simanja.controller;
 
-import com.simanja.service.AuthService;
 import com.simanja.model.User;
+import com.simanja.service.ApiAuthService;
 import com.simanja.util.SceneManager;
+import com.simanja.util.SessionManager;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.text.Text;
-
-import java.util.Optional;
 
 /**
  * Controller untuk Login Page
@@ -21,7 +20,8 @@ public class LoginController {
     @FXML private Label lblError;
     @FXML private Hyperlink linkDaftar;
 
-    private final AuthService authService = new AuthService();
+    private final ApiAuthService authService =
+            new ApiAuthService();
 
     @FXML
     public void initialize() {
@@ -30,19 +30,26 @@ public class LoginController {
 
     @FXML
     private void handleLogin() {
+
         lblError.setVisible(false);
-        String email    = txtEmail.getText().trim();
+
+        String email = txtEmail.getText().trim();
         String password = txtPassword.getText();
 
         try {
-            Optional<User> result = authService.login(email, password);
-            if (result.isPresent()) {
-                SceneManager.switchTo("dashboard");
-            } else {
-                showError("Email atau password salah.");
-            }
-        } catch (IllegalArgumentException e) {
-            showError(e.getMessage());
+
+            User user =
+                    authService.login(email, password);
+
+            SessionManager.getInstance().login(user);
+
+            SceneManager.switchTo("dashboard");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Platform.runLater(() -> {
+                showError(e.getMessage());
+            });
         }
     }
 

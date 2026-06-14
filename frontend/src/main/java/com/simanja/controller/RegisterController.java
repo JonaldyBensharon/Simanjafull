@@ -1,7 +1,8 @@
 package com.simanja.controller;
 
-import com.simanja.service.AuthService;
+import com.simanja.service.ApiAuthService;
 import com.simanja.util.SceneManager;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
@@ -20,7 +21,8 @@ public class RegisterController {
     @FXML private Label lblSuccess;
     @FXML private Hyperlink linkLogin;
 
-    private final AuthService authService = new AuthService();
+    private final ApiAuthService authService =
+            new ApiAuthService();
 
     @FXML
     public void initialize() {
@@ -30,21 +32,28 @@ public class RegisterController {
 
     @FXML
     private void handleDaftar() {
+
         lblError.setVisible(false);
         lblSuccess.setVisible(false);
 
-        String nama            = txtNama.getText().trim();
-        String email           = txtEmail.getText().trim();
-        String password        = txtPassword.getText();
+        String nama = txtNama.getText().trim();
+        String email = txtEmail.getText().trim();
+        String password = txtPassword.getText();
         String konfirmPassword = txtKonfirmPassword.getText();
 
         try {
             authService.register(nama, email, password, konfirmPassword);
-            lblSuccess.setText("Registrasi berhasil! Silakan login.");
-            lblSuccess.setVisible(true);
-            clearForm();
-        } catch (IllegalArgumentException e) {
-            showError(e.getMessage());
+            Platform.runLater(() -> {
+                lblSuccess.setText("Registrasi berhasil! Silakan login.");
+                lblSuccess.setVisible(true);
+                clearForm();
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Platform.runLater(() -> {
+                showError(e.getMessage());
+            });
         }
     }
 
